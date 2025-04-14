@@ -1,0 +1,75 @@
+# === Python ===
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Logs and local databases
+*.log
+*.sqlite3
+
+# Environment variables
+.env
+
+# IDE/editor settings
+.vscode/
+.idea/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# === C / C++ ===
+
+# Object files, static and shared libs
+*.o
+*.a
+*.so
+*.out
+*.obj
+*.exe
+*.dll
+
+# Build directories
+/build/
+Debug/
+Release/
+
+# Compiled binary files
+
+# Core dumps
+core
+
+# Makefiles (optional if generated)
+CMakeCache.txt
+cmake_install.cmake
+
+# Code analysis / debugging
+*.gcno
+*.gcda
+*.gch
+*.pdb
+*.ilk
+
+# === General ===
+
+# Backup files
+*~
+*.swp
+*.bak
+
+
+tools/*.c
