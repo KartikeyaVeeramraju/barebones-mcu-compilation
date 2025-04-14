@@ -1,0 +1,66 @@
+# project_config.yaml
+
+project:
+  name: "basic_proj"
+  version: "1.0.0"
+  description: "Basic Starter Project"
+  target_mcu: "STM32F446RE"
+  board: "custom_board_v1"
+
+toolchain:
+  name: "arm-none-eabi-gcc"
+  version: "12.2.1"
+  optimization: "O0"
+  debug_symbols: true
+
+memory:
+  flash:
+    origin: 0x08000000
+    size: 512K  # 512KB
+  sram1:
+    origin: 0x20000000
+    size: 112K
+  sram2:
+    origin: 0x2001C000 #0x20000000 + 0x(112dec * 1024dec) 
+    size: 16K
+
+build:
+  output_dir: "build"
+  linker_script: "STM32F407VG_FLASH.ld"
+  startup_file: "startup_stm32f407xx.s"
+  defines:
+    - "USE_HAL_DRIVER"
+    - "STM32F407xx"
+  include_dirs:
+    - "Core/Inc"
+    - "Drivers/STM32F4xx_HAL_Driver/Inc"
+    - "Drivers/CMSIS/Device/ST/STM32F4xx/Include"
+    - "Drivers/CMSIS/Include"
+  src_dirs:
+    - "Core/Src"
+    - "Drivers/STM32F4xx_HAL_Driver/Src"
+    - "App"
+  exclude_files:
+    - "*.tmp"
+    - "*.bak"
+
+flash:
+  tool: "openocd"
+  config_file: "interface/stlink.cfg"
+  target: "target/stm32f4x.cfg"
+  command: "program build/motor_controller.elf verify reset exit"
+
+debug:
+  interface: "stlink"
+  gdb_server: "openocd"
+  gdb_port: 3333
+
+dependencies:
+  hal: "STM32CubeF4"
+  cmsis: "5.8.0"
+
+ci:
+  test_framework: "unity"
+  lint: "cppcheck"
+  build_command: "make all"
+  test_command: "make test"

@@ -10,7 +10,6 @@ venv/
 env/
 
 # Distribution / packaging
-build/
 dist/
 *.egg-info/
 
@@ -44,7 +43,6 @@ Thumbs.db
 *.dll
 
 # Build directories
-/build/
 Debug/
 Release/
 
