@@ -17,6 +17,7 @@ SECTIONS
         *(.isr_section) /* initial code space must contain the vector table. Note that we only have one ISR vector section */
         *(.text) /* add all the .text sections of the .text section from all object files*/
         *(.rodata) 
+        . = ALIGN(4);
         _etext = .; /* Store the updated location counter value into a symbol 'end_of_text' */
     }> FLASH
 
@@ -24,6 +25,7 @@ SECTIONS
     {
         _sdata = 0;
         *(.data)
+        . = ALIGN(4);
         _edata = .;
     }> SRAM AT> FLASH
 
@@ -31,6 +33,7 @@ SECTIONS
     {
         _sbss = .;
         *(.bss)
+        . = ALIGN(4);
         _ebss = .;
     }> SRAM
 }

@@ -14,7 +14,7 @@ LOAD stm32_startup.o
                 0x0000000000000400                __max_heap_size = 0x400
                 0x0000000000000200                __max_stack_size = 0x200
 
-.text           0x0000000008000000      0x5e5
+.text           0x0000000008000000      0x664
  *(.isr_section)
  *(.text)
  .text          0x0000000008000000      0x4cc main.o
@@ -46,7 +46,7 @@ LOAD stm32_startup.o
                 0x00000000080004f4                led_init_all
                 0x0000000008000568                led_on
                 0x0000000008000598                led_off
- .text          0x00000000080005c8       0x12 stm32_startup.o
+ .text          0x00000000080005c8       0x90 stm32_startup.o
                 0x00000000080005c8                RTC_WKUP_Handler
                 0x00000000080005c8                FLASH_Handler
                 0x00000000080005c8                SVCall_Handler
@@ -142,48 +142,51 @@ LOAD stm32_startup.o
                 0x00000000080005c8                OTG_HS_EP1_IN_Handler
                 0x00000000080005ce                reset_handler
  *(.rodata)
- *fill*         0x00000000080005da        0x2 
- .rodata        0x00000000080005dc        0x9 main.o
-                0x00000000080005dc                const_v_1
-                0x00000000080005e0                const_v_2
-                0x00000000080005e4                const_V_3
-                0x00000000080005e5                _etext = .
+ .rodata        0x0000000008000658        0x9 main.o
+                0x0000000008000658                const_v_1
+                0x000000000800065c                const_v_2
+                0x0000000008000660                const_V_3
+                0x0000000008000664                . = ALIGN (0x4)
+ *fill*         0x0000000008000661        0x3 
+                0x0000000008000664                _etext = .
 
-.glue_7         0x00000000080005e8        0x0
- .glue_7        0x00000000080005e8        0x0 linker stubs
+.glue_7         0x0000000008000664        0x0
+ .glue_7        0x0000000008000664        0x0 linker stubs
 
-.glue_7t        0x00000000080005e8        0x0
- .glue_7t       0x00000000080005e8        0x0 linker stubs
+.glue_7t        0x0000000008000664        0x0
+ .glue_7t       0x0000000008000664        0x0 linker stubs
 
-.vfp11_veneer   0x00000000080005e8        0x0
- .vfp11_veneer  0x00000000080005e8        0x0 linker stubs
+.vfp11_veneer   0x0000000008000664        0x0
+ .vfp11_veneer  0x0000000008000664        0x0 linker stubs
 
-.v4_bx          0x00000000080005e8        0x0
- .v4_bx         0x00000000080005e8        0x0 linker stubs
+.v4_bx          0x0000000008000664        0x0
+ .v4_bx         0x0000000008000664        0x0 linker stubs
 
-.iplt           0x00000000080005e8        0x0
- .iplt          0x00000000080005e8        0x0 main.o
+.iplt           0x0000000008000664        0x0
+ .iplt          0x0000000008000664        0x0 main.o
 
-.rel.dyn        0x00000000080005e8        0x0
- .rel.iplt      0x00000000080005e8        0x0 main.o
+.rel.dyn        0x0000000008000664        0x0
+ .rel.iplt      0x0000000008000664        0x0 main.o
 
-.data           0x0000000020000000        0x1 load address 0x00000000080005e5
+.data           0x0000000020000000        0x4 load address 0x0000000008000664
                 0x0000000020000000                _sdata = 0x0
  *(.data)
  .data          0x0000000020000000        0x1 main.o
                 0x0000000020000000                current_task
  .data          0x0000000020000001        0x0 led.o
  .data          0x0000000020000001        0x0 stm32_startup.o
-                0x0000000020000001                _edata = .
+                0x0000000020000004                . = ALIGN (0x4)
+ *fill*         0x0000000020000001        0x3 
+                0x0000000020000004                _edata = .
 
-.igot.plt       0x0000000020000004        0x0 load address 0x00000000080005e6
+.igot.plt       0x0000000020000004        0x0 load address 0x0000000008000668
  .igot.plt      0x0000000020000004        0x0 main.o
 
-.isr_vector     0x0000000020000004      0x1b8 load address 0x00000000080005e6
+.isr_vector     0x0000000020000004      0x1b8 load address 0x0000000008000668
  .isr_vector    0x0000000020000004      0x1b8 stm32_startup.o
                 0x0000000020000004                vectors
 
-.bss            0x00000000200001bc       0x54 load address 0x000000000800079e
+.bss            0x00000000200001bc       0x54 load address 0x0000000008000820
                 0x00000000200001bc                _sbss = .
  *(.bss)
  .bss           0x00000000200001bc       0x54 main.o
@@ -191,6 +194,7 @@ LOAD stm32_startup.o
                 0x00000000200001c0                user_tasks
  .bss           0x0000000020000210        0x0 led.o
  .bss           0x0000000020000210        0x0 stm32_startup.o
+                0x0000000020000210                . = ALIGN (0x4)
                 0x0000000020000210                _ebss = .
 OUTPUT(final.elf elf32-littlearm)
 LOAD linker stubs
