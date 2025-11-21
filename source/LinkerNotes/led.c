@@ -2,13 +2,9 @@
 
 #include "led.h"
 
-void delay(uint32_t count) {
-  for (uint32_t i = 0; i < count; i++)
-    ;
-}
+void delay(uint32_t count) { for (uint32_t i = 0; i < count; i++); }
 
 void led_init_all(void) {
-
   uint32_t *pRccAhb1enr = (uint32_t *)0x40023830;
   uint32_t *pGpiodModeReg = (uint32_t *)0x40020C00;
 
