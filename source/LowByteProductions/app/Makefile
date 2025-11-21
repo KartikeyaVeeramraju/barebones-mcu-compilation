@@ -5,13 +5,16 @@ Q		:= @
 NULL		:= 2>/dev/null
 endif
 
-SRC_DIR        = src
-INC_DIR        = inc
-OPENCM3_DIR    = ../libopencm3
-SHARED_SRC_DIR = ../shared/src
-SHARED_INC_DIR = ../shared/inc
+MAKEFILE_DIR   := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+THIS_MAKEFILE  := $(abspath $(lastword $(MAKEFILE_LIST)))
+SRC_DIR        = $(MAKEFILE_DIR)src
+INC_DIR        = $(MAKEFILE_DIR)inc
+OPENCM3_DIR    = $(MAKEFILE_DIR)../libopencm3
+SHARED_SRC_DIR = $(MAKEFILE_DIR)../shared/src
+SHARED_INC_DIR = $(MAKEFILE_DIR)../shared/inc
 
-BINARY = firmware
+BINARY     = firmware
+BINARY_OUT = $(MAKEFILE_DIR)$(BINARY)
 
 ###############################################################################
 # Basic Device Setup
@@ -24,7 +27,7 @@ ARCH_FLAGS	= -mthumb -mcpu=cortex-m4 $(FP_FLAGS)
 ###############################################################################
 # Linkerscript
 
-LDSCRIPT = linkerscript.ld
+LDSCRIPT = $(MAKEFILE_DIR)linkerscript.ld
 LDLIBS		+= -l$(LIBNAME)
 LDFLAGS		+= -L$(OPENCM3_DIR)/lib
 
@@ -116,15 +119,15 @@ LDLIBS		+= -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
 
 all: elf bin
 
-elf: $(BINARY).elf
-bin: $(BINARY).bin
-hex: $(BINARY).hex
-srec: $(BINARY).srec
-list: $(BINARY).list
-GENERATED_BINARIES=$(BINARY).elf $(BINARY).bin $(BINARY).hex $(BINARY).srec $(BINARY).list $(BINARY).map
+elf: $(BINARY_OUT).elf
+bin: $(BINARY_OUT).bin
+hex: $(BINARY_OUT).hex
+srec: $(BINARY_OUT).srec
+list: $(BINARY_OUT).list
+GENERATED_BINARIES=$(BINARY_OUT).elf $(BINARY_OUT).bin $(BINARY_OUT).hex $(BINARY_OUT).srec $(BINARY_OUT).list $(BINARY_OUT).map
 
-images: $(BINARY).images
-flash: $(BINARY).flash
+images: $(BINARY_OUT).images
+flash: $(BINARY_OUT).flash
 
 $(OPENCM3_DIR)/lib/lib$(LIBNAME).a:
 ifeq (,$(wildcard $@))
@@ -158,7 +161,7 @@ print-%:
 	@#printf "  OBJDUMP $(*).list\n"
 	$(Q)$(OBJDUMP) -S $(*).elf > $(*).list
 
-%.elf %.map: $(OBJS) $(LDSCRIPT) $(OPENCM3_DIR)/lib/lib$(LIBNAME).a Makefile
+%.elf %.map: $(OBJS) $(LDSCRIPT) $(OPENCM3_DIR)/lib/lib$(LIBNAME).a $(THIS_MAKEFILE)
 	@#printf "  LD      $(*).elf\n"
 	$(Q)$(LD) $(TGT_LDFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $(*).elf
 
