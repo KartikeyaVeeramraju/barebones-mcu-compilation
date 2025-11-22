@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "firmware-tools"
+version = "0.1.0"
+description = "GUI and helper utilities for building STM32 firmware using CMake + Ninja."
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "firmware_tools"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+
+[tool.poetry.scripts]
+build-gui = "firmware_tools.gui:main"
+
+[tool.poetry.group.dev.dependencies]
+black = "*"
+flake8 = "*"
