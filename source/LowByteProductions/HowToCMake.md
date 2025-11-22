@@ -267,6 +267,51 @@ This is how professional embedded teams structure their firmware builds.
 
 ---
 
+
+# ⚡ Using Ninja for Faster Builds
+
+Ninja is designed for large and incremental builds. It is dramatically faster than Make and works perfectly with CMake.
+
+## Install Ninja
+
+Ubuntu:
+```bash
+sudo apt install ninja-build
+```
+
+macOS (Homebrew):
+```bash
+brew install ninja
+```
+
+## Configure CMake to use Ninja
+
+```bash
+cmake -G Ninja -S . -B build
+```
+
+## Build using Ninja
+
+```bash
+ninja -C build
+```
+
+## Clean rebuild
+
+```bash
+rm -rf build
+cmake -G Ninja -S . -B build
+ninja -C build
+```
+
+## Make Ninja the default generator (optional)
+
+Add to your `.bashrc` or `.zshrc`:
+
+```bash
+
+---
+
 # 📚 Summary
 
 This example teaches how to:
@@ -277,20 +322,6 @@ This example teaches how to:
 ✔ Produce `.elf` and `.bin` artifacts  
 ✔ Flash with ST-Link  
 ✔ Scale this structure to any MCU  
+✔ How to build faster with Ninja
 
 Use this template as your starter for all future embedded projects.
-
----
-
-# 🙋 Need more?
-
-I can also generate:
-
-- A complete **template repo** (startup, linker script, example firmware)
-- VSCode Cortex-Debug configurations
-- GDB helper scripts
-- Newlib-nano integration
-- FreeRTOS + CMake template
-
-Just ask.
-
