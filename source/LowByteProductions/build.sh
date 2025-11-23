@@ -8,21 +8,17 @@
 #    ./build.sh rebuild [--ninja] [Debug|Release]
 #    ./build.sh clean
 #
-#    ./build.sh flash        # Flash firmware via st-flash
-#    ./build.sh size         # Show firmware size
-#    ./build.sh objdump      # Generate disassembly (firmware.lst)
-#    ./build.sh gdb          # Start st-util + GDB session
-#
-#  Examples:
-#    ./build.sh build --ninja
-#    ./build.sh build Debug
-#    ./build.sh rebuild --ninja Release
 #    ./build.sh flash
+#    ./build.sh size
+#    ./build.sh objdump
+#    ./build.sh gdb
+#
+#  Options:
+#    --toolchain <file>   Override the toolchain file
 #
 #  Notes:
-#    - Uses Ninja if --ninja is provided, else uses Make.
-#    - Requires arm-none-eabi toolchain.
-#    - Requires stlink tools for flash and GDB debugging.
+#    - ALWAYS forces CMake to use ARM GCC (arm-none-eabi-gcc)
+#    - Fixes the root cause where CMake picks /usr/bin/cc
 # -------------------------------------------------------------
 
 set -e
@@ -31,6 +27,7 @@ BUILD_DIR="build"
 GENERATOR="Unix Makefiles"
 USE_NINJA=0
 BUILD_TYPE="Release"
+TOOLCHAIN_FILE="toolchain-arm-gcc.cmake"   # default
 
 # -------------------------------
 # Color Helpers
@@ -56,23 +53,31 @@ err() {
 # -------------------------------
 # Argument Parser
 # -------------------------------
+prev_arg=""
 for arg in "$@"; do
+    case $prev_arg in
+        --toolchain)
+            TOOLCHAIN_FILE="$arg"
+            prev_arg=""
+            continue
+            ;;
+    esac
+
     case $arg in
         --ninja)
             USE_NINJA=1
-            shift
+            ;;
+        --toolchain)
+            prev_arg="--toolchain"
             ;;
         Debug|debug)
             BUILD_TYPE="Debug"
-            shift
             ;;
         Release|release)
             BUILD_TYPE="Release"
-            shift
             ;;
         *)
             ACTION="$arg"
-            shift
             ;;
     esac
 done
@@ -89,6 +94,21 @@ if [ $USE_NINJA -eq 1 ]; then
 fi
 
 # -------------------------------
+# Toolchain file validation
+# -------------------------------
+if [ ! -f "$TOOLCHAIN_FILE" ]; then
+    err "Toolchain file '$TOOLCHAIN_FILE' not found!"
+    echo "Expected something like:"
+    echo "  $TOOLCHAIN_FILE"
+    echo "Or override with:"
+    echo "  ./build.sh build --toolchain myfile.cmake"
+    exit 1
+fi
+
+# Inform user
+msg "Using toolchain: $TOOLCHAIN_FILE"
+
+# -------------------------------
 # Core Actions
 # -------------------------------
 do_clean() {
@@ -99,17 +119,25 @@ do_clean() {
 
 do_configure() {
     msg "Configuring project..."
-    cmake -G "$GENERATOR" -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+
+    cmake -G "$GENERATOR" \
+        -S . \
+        -B "$BUILD_DIR" \
+        -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+        -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE"
+
     ok "CMake configuration complete."
 }
 
 do_build() {
     msg "Building project..."
+    
     if [ $USE_NINJA -eq 1 ]; then
         ninja -C "$BUILD_DIR"
     else
         cmake --build "$BUILD_DIR" -- -j$(nproc)
     fi
+
     ok "Build complete."
 }
 
@@ -162,7 +190,7 @@ do_objdump() {
 }
 
 # -------------------------------
-# GDB Session (auto-start st-util)
+# GDB Session
 # -------------------------------
 do_gdb() {
     ELF="$BUILD_DIR/firmware.elf"
@@ -175,7 +203,6 @@ do_gdb() {
     msg "Starting st-util..."
     st-util &
     ST_PID=$!
-
     sleep 1
 
     msg "Launching GDB..."
@@ -217,8 +244,9 @@ case "$ACTION" in
         echo -e "${YELLOW}Usage:${RESET}"
         echo "  ./build.sh build [--ninja] [Debug|Release]"
         echo "  ./build.sh rebuild [--ninja] [Debug|Release]"
-        echo "  ./build.sh clean"
+        echo "  ./build.sh --toolchain <file>"
         echo ""
+        echo "  ./build.sh clean"
         echo "  ./build.sh flash"
         echo "  ./build.sh size"
         echo "  ./build.sh objdump"

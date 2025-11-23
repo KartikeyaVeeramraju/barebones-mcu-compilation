@@ -57,3 +57,17 @@ libopencm3/*.o
 
 # ---- Logs ----
 *.log
+
+
+# -----------------------------
+# Build artifacts in app/
+# -----------------------------
+app/*.o
+app/*.d
+app/*.elf
+app/*.bin
+app/*.hex
+app/*.map
+app/*.lst
+app/*.dump
+app/*.log
