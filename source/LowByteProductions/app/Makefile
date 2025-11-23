@@ -192,3 +192,18 @@ clean:
 
 %.flash: %.bin
 	$(STFLASH) --reset write $< 0x08000000
+
+# ----------------------------------------------------------------------
+# Disassembly / Objdump Targets
+# ----------------------------------------------------------------------
+
+DUMP = $(BINARY).dump
+LST  = $(BINARY).lst
+
+dump: $(BINARY).elf
+	@echo "  OBJDUMP $(DUMP)"
+	$(Q)$(OBJDUMP) -d -S $(BINARY).elf > $(DUMP)
+
+list: $(BINARY).elf
+	@echo "  OBJDUMP $(LST)"
+	$(Q)$(OBJDUMP) -D -S -x $(BINARY).elf > $(LST)

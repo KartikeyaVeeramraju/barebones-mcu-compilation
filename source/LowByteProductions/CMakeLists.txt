@@ -2,33 +2,48 @@ cmake_minimum_required(VERSION 3.16)
 project(firmware C ASM)
 
 # -------------------------------------------------------------
-# Toolchain
+# Project setup
 # -------------------------------------------------------------
-set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_SYSTEM_PROCESSOR arm)
+enable_language(C ASM)
 
-set(TOOLCHAIN arm-none-eabi)
-set(CMAKE_C_COMPILER ${TOOLCHAIN}-gcc)
-set(CMAKE_ASM_COMPILER ${TOOLCHAIN}-gcc)
-set(CMAKE_OBJCOPY ${TOOLCHAIN}-objcopy)
-
-# -------------------------------------------------------------
-# C Compiler Flags
-# -------------------------------------------------------------
-set(CMAKE_C_FLAGS "-mcpu=cortex-m4 -mthumb -O2 -ffunction-sections -fdata-sections -DSTM32F4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables")
-
+# We assume the toolchain is provided via:
+#   -DCMAKE_TOOLCHAIN_FILE=toolchain-arm-gcc.cmake
+#
+# i.e. build.sh does:
+#   cmake -G Ninja -S . -B build -DCMAKE_TOOLCHAIN_FILE=toolchain-arm-gcc.cmake
 
 # -------------------------------------------------------------
-# Linker Flags
+# Global compile options
 # -------------------------------------------------------------
-set(CMAKE_EXE_LINKER_FLAGS "-T ${CMAKE_SOURCE_DIR}/app/linkerscript.ld -Wl,--gc-sections -nostdlib -nostartfiles -nodefaultlibs -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16")
+# Core + FPU + "bare-metal friendly" flags
+add_compile_options(
+    -mcpu=cortex-m4
+    -mthumb
+    -mfloat-abi=hard
+    -mfpu=fpv4-sp-d16
+    -O2
+    -ffunction-sections
+    -fdata-sections
+    -fno-exceptions
+    -fno-unwind-tables
+    -fno-asynchronous-unwind-tables
+)
 
-
-# Override default C runtime libs
-set(CMAKE_C_STANDARD_LIBRARIES "-lc -lnosys")
+# MCU / family defines
+add_compile_definitions(
+    STM32F4        # libopencm3 family
+    STM32F446xx    # specific device (for your code / any CMSIS-y headers)
+)
 
 # -------------------------------------------------------------
-# Build libopencm3 using its existing Makefile
+# Linker options
+# -------------------------------------------------------------
+# Use your linker script and keep things lean.
+# We use target_link_options (modern CMake) instead of global flags.
+set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/app/linkerscript.ld")
+
+# -------------------------------------------------------------
+# libopencm3 build (via its own Makefile)
 # -------------------------------------------------------------
 include(ExternalProject)
 
@@ -44,25 +59,48 @@ ExternalProject_Add(libopencm3_project
 set(OPENCM3_LIB ${CMAKE_SOURCE_DIR}/libopencm3/lib/libopencm3_stm32f4.a)
 
 # -------------------------------------------------------------
-# Firmware sources
+# Include paths
 # -------------------------------------------------------------
 include_directories(
     ${CMAKE_SOURCE_DIR}/app/inc
     ${CMAKE_SOURCE_DIR}/libopencm3/include
 )
 
+# -------------------------------------------------------------
+# Firmware target
+# -------------------------------------------------------------
 add_executable(firmware.elf
     app/src/firmware.c
 )
 
-# Ensure libopencm3 builds first
+# Make sure libopencm3 is built first
 add_dependencies(firmware.elf libopencm3_project)
 
-# Link firmware
-target_link_libraries(firmware.elf
+# Link options specific to the firmware target
+target_link_options(firmware.elf PRIVATE
+    -T${LINKER_SCRIPT}
+    -Wl,--gc-sections
+    -nostdlib
+    -nostartfiles
+    -nodefaultlibs
+    -mcpu=cortex-m4
+    -mthumb
+    -mfloat-abi=hard
+    -mfpu=fpv4-sp-d16
+
+    # Make absolutely sure the startup code and reset_handler are NOT gc'd
+    -Wl,--undefined=reset_handler
+)
+
+# Libraries:
+# - libopencm3: HAL / low-level stuff
+# - c / nosys / m / gcc: C runtime, syscalls, math, builtins
+target_link_libraries(firmware.elf PRIVATE
     ${OPENCM3_LIB}
     c
     nosys
+    m
+    gcc
 )
 
 # -------------------------------------------------------------
